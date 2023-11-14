@@ -3,8 +3,10 @@
 #include <algorithm>
 #include <vector>
 #include <iostream>
+#include <limits>
 
 #include <glm/glm.hpp>
+#include <glm/gtc/matrix_transform.hpp>
 
 #include "Deltatime.h"
 
@@ -16,10 +18,7 @@ namespace Engine{
 #define DEFAULT_ELASTICITY 0.3f
 #define DEFAULT_FRICTION 0.2f
 
-#define COLLISION_POINT_SPACING 5.0f
-#define MAX_COLLISION_POINT_DIST 2.0f
-#define COLLISION_POINT_SAFE_SPACE 0.05f
-
+#define SHAPE_POINTS 8
 
 class Body{
 public:
@@ -39,13 +38,17 @@ public:
     bool isGrounded;
 
     float density;
+    glm::vec3 points[SHAPE_POINTS];
+    glm::vec3 vertices[SHAPE_POINTS];
 private:
+
+    void UpdateVertices();
+
+    glm::mat4 model;
 
     std::vector<glm::vec3> xSideCollisionPoints;
     std::vector<glm::vec3> ySideCollisionPoints;
     std::vector<glm::vec3> zSideCollisionPoints;
-
-    void CalculateCollisionPoints();
 
     static bool IsRayIntersecting(Body* other, glm::vec3 p1, glm::vec3 p2, float numIcrements);
 
