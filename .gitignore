@@ -1,0 +1,8 @@
+*.o
+out.txt
+build
+CMakeFiles
+.vscode
+.idea
+CMakeCache.txt
+Engine

@@ -1,0 +1,44 @@
+Already logging to log.txt.
+Starting program: /media/jtv/kweezo/Engine/Engine 
+[Thread debugging using libthread_db enabled]
+Using host libthread_db library "/lib/x86_64-linux-gnu/libthread_db.so.1".
+
+Breakpoint 1, Renderer::Sprite::LoadSprite (this=0x7fffffffd670, path="res/dafuq.jpeg") at /media/jtv/kweezo/Engine/Sprite.cpp:20
+20	    if(!data){
+Hardware watchpoint 3: data
+Continuing.
+Error evaluating expression for watchpoint 3
+cannot resolve overloaded method `data': no arguments supplied
+Watchpoint 3 deleted.
+std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >::_M_dispose (this=0x7fffffffd5f0) at /usr/include/c++/11/bits/basic_string.h:239
+239		if (!_M_is_local())
+Continuing.
+[New Thread 0x7ffff1335640 (LWP 10260)]
+[New Thread 0x7ffff0b34640 (LWP 10261)]
+[Switching to Thread 0x7ffff0b34640 (LWP 10261)]
+
+Thread 3 "Engine" hit Breakpoint 1, Renderer::Sprite::LoadSprite (this=0x555555bd58d8, path="res/lizard/") at /media/jtv/kweezo/Engine/Sprite.cpp:20
+20	    if(!data){
+Ambiguous command "remove breakpoint 1": remove-inferiors, remove-symbol-file.
+No breakpoint at 1.
+Function "break" not defined.
+Function "list" not defined.
+Continuing.
+[Thread 0x7ffff0b34640 (LWP 10261) exited]
+[New Thread 0x7fffebfff640 (LWP 10576)]
+[New Thread 0x7fffeb7fe640 (LWP 10577)]
+[Thread 0x7fffeb7fe640 (LWP 10577) exited]
+[New Thread 0x7fffea3fa640 (LWP 10578)]
+[New Thread 0x7fffe9bf9640 (LWP 10579)]
+[Thread 0x7fffea3fa640 (LWP 10578) exited]
+[Thread 0x7fffe9bf9640 (LWP 10579) exited]
+[Thread 0x7ffff1335640 (LWP 10260) exited]
+[New Thread 0x7fffe93f8640 (LWP 10580)]
+[New Thread 0x7fffe8bf7640 (LWP 10581)]
+[Thread 0x7fffe8bf7640 (LWP 10581) exited]
+[Thread 0x7fffebfff640 (LWP 10576) exited]
+[Thread 0x7fffe93f8640 (LWP 10580) exited]
+
+Thread 1 "Engine" received signal SIGSEGV, Segmentation fault.
+[Switching to Thread 0x7ffff7a60780 (LWP 10175)]
+0x00007ffff5e589e8 in ?? () from /lib/x86_64-linux-gnu/libnvidia-glcore.so.535.113.01
