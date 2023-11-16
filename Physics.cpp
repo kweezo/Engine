@@ -24,6 +24,7 @@ Body::Body(glm::vec3 pos, glm::vec3 size, float mass, bool isStatic){
 
     UpdateVertices();
 
+
     model = glm::mat4(1.0f);
 
     RecalculateTerminalVelocity();
@@ -49,11 +50,11 @@ void Body::ApplyGravity(){
 void Body::UpdateVertices(){
     model = glm::mat4(1.0f);
     model = glm::translate(model, pos);
-    model = glm::scale(model, size);
+    model = glm::scale(model, size * 2.0f);
 
-    for(uint32_t i = 0; i < SHAPE_POINTS; i++){
+    for(uint32_t i = 0; i < COLLIDER_VERTEX_COUNT; i++){
         glm::vec4 v = model*glm::vec4(points[i], 1.0f);
-        vertices[i] = glm::vec3(v.x, v.y, v.z) / v.w;
+        vertices[i] = glm::vec3(v.x, v.y, v.z);
     }
 }
 
@@ -71,6 +72,9 @@ void Body::Update(){
     //do it in a global func or smthn
     isGrounded = false;
 }
+float Body::CalculateOverlap(float aMinProj, float aMaxProj, float bMinProj, float bMaxProj){
+    return (aMinProj > bMinProj) ? aMinProj : bMinProj - (aMaxProj > bMaxProj) ? bMaxProj : aMaxProj; 
+}
 
 void Body::CheckCollision(Body* other){
 
@@ -78,87 +82,110 @@ void Body::CheckCollision(Body* other){
         return;
     }
 
-    bool intersection = true;
+    glm::vec3 axis;
 
-    for(uint32_t i = 0; i < SHAPE_POINTS; i++){
 
+    glm::vec3 mtvAxis;
+    float overlap = std::numeric_limits<float>::infinity();
+
+    for(uint32_t i = 0; i < COLLIDER_VERTEX_COUNT; i++){
         glm::vec3 curr = vertices[i];
-        glm::vec3 next = vertices[(i + 1) % SHAPE_POINTS];
-        glm::vec3 third = vertices[(i + 2) % SHAPE_POINTS];
         glm::vec3 edges[2];
 
-        edges[0] = next - curr;
-        edges[1] = third - curr;
+        edges[0] = vertices[(i + 1) % COLLIDER_VERTEX_COUNT]- curr;
+        edges[1] = vertices[(i + 2) % COLLIDER_VERTEX_COUNT]- curr;
 
-        glm::vec3 axis = glm::cross(edges[0], edges[1]);
+        axis = glm::normalize(glm::cross(edges[1], edges[0]));
 
-        float aMaxProj = -std::numeric_limits<float>::infinity();
-        float aMinProj = std::numeric_limits<float>::infinity();
+        OverlapInfo overlapInfo = CheckOverlap(this, other, axis);
+        if(!overlapInfo.isOverlapping){
+            return;
+        }
 
-        float bMaxProj = -std::numeric_limits<float>::infinity();
-        float bMinProj = std::numeric_limits<float>::infinity();
+        curr = other->vertices[i];
+        edges[0] = other->vertices[(i + 1) % COLLIDER_VERTEX_COUNT]- curr;
+        edges[1] = other->vertices[(i + 2) % COLLIDER_VERTEX_COUNT]- curr;
+
+        axis = glm::normalize(glm::cross(edges[1], edges[0]));
+
+        overlapInfo = CheckOverlap(this, other, axis);
+        if(!overlapInfo.isOverlapping){
+            return;
+        }
+
+        axis = glm::normalize(glm::cross(vertices[(i + 1) % COLLIDER_VERTEX_COUNT] - curr,
+        other->vertices[(i + 1) % COLLIDER_VERTEX_COUNT] - other->vertices[i]));
+
+        overlapInfo = CheckOverlap(this, other, axis);
+        if(!overlapInfo.isOverlapping){
+            return;
+        }
+
+        axis = glm::normalize(glm::cross(vertices[(i + 2) % COLLIDER_VERTEX_COUNT] - curr,
+        other->vertices[(i + 2) % COLLIDER_VERTEX_COUNT] - other->vertices[i]));
         
+        overlapInfo = CheckOverlap(this, other, axis);
+        if(!overlapInfo.isOverlapping){
+            return;
+        }
+
+        if(overlapInfo.overlap < overlap){
+            overlap = overlapInfo.overlap;
+            mtvAxis = axis;
+        }
+    }
+
     
-        for(glm::vec3 p : vertices){
-            float proj = glm::dot(axis, p);
-
-            if(proj < aMinProj){
-                aMinProj = proj;
-            }
-            if(proj > aMaxProj){
-                aMaxProj = proj;
-            }
-        }
-
-        for(glm::vec3 p : other->vertices){
-            float proj = glm::dot(axis, p);
-
-            if(proj < bMinProj){
-                bMinProj = proj;
-            }
-            if(proj > bMaxProj){
-                bMaxProj = proj;
-            }
-        }
-
-        //std::cout << aMinProj << " " << aMaxProj << " " << bMinProj << " " << bMaxProj << std::endl;
-
-        if(aMaxProj < bMinProj || aMinProj > bMaxProj){
-            intersection = false;
-        }
-    }
-
-    if(!intersection){
-        return;
-    }
-
-    vel.y = 0;
-    pos.y -= GRAVITY;
+    vel = glm::vec3(0);
+    
 }
+
+OverlapInfo Body::CheckOverlap(Body* b1, Body* b2, glm::vec3 axis){
+
+
+    OverlapInfo overlapInfo;
+
+    float aMaxProj = -std::numeric_limits<float>::infinity();
+    float aMinProj = std::numeric_limits<float>::infinity();
+
+    float bMaxProj = -std::numeric_limits<float>::infinity();
+    float bMinProj = std::numeric_limits<float>::infinity();
+    
+
+    for(glm::vec3 p : b1->vertices){
+        float proj = glm::dot(axis, p);
+
+        if(proj < aMinProj){
+            aMinProj = proj;
+        }
+        if(proj > aMaxProj){
+            aMaxProj = proj;
+        }
+    }
+
+    for(glm::vec3 p : b2->vertices){
+        float proj = glm::dot(axis, p);
+
+        if(proj < bMinProj){
+            bMinProj = proj;
+        }
+        if(proj > bMaxProj){
+            bMaxProj = proj;
+        }
+    }
+    if(aMaxProj < bMinProj || bMaxProj < aMinProj){
+        overlapInfo.isOverlapping = false;
+        overlapInfo.overlap = std::numeric_limits<float>::infinity();
+        return overlapInfo;
+    }
+
+    overlapInfo.isOverlapping = true;
+    overlapInfo.overlap = CalculateOverlap(aMinProj, aMaxProj, bMinProj, bMaxProj);
+    return overlapInfo;
+}
+
 
 void Body::ApplyImpulse(glm::vec3 impulse){
     vel += impulse;
 }
-
-
-bool Body::IsRayIntersecting(Body* other, glm::vec3 p1, glm::vec3 p2, float numIncrements){
-    glm::vec3 dir = p2 - p1;
-    glm::vec3 incr = glm::abs(dir / numIncrements);
-    dir = glm::normalize(dir);
-
-    glm::vec3 p = p2;
-
-    for(uint32_t i = 0; i < numIncrements; i++){
-        p = p2 - incr * dir * (float)i;
-        if(p.x > other->pos.x - other->size.x && p.x < other->pos.x + other->size.x
-        && p.y > other->pos.y - other->size.y && p.y < other->pos.y + other->size.y
-        && p.z > other->pos.z - other->size.z && p.z < other->pos.z + other->size.z){
-            return true;
-        }
-    }
-    
-    return false;    
-}
-
-
 }

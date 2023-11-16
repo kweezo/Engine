@@ -36,7 +36,6 @@ void Manager::Init(){
     body = Engine::Body(glm::vec3(0), glm::vec3(1, 2.5, 1), 0.2, false);
     body2 = Engine::Body(glm::vec3(0, -20, 0), glm::vec3(5, 0.1, 5), 600, true);
     body3 = Engine::Body(glm::vec3(3, -20, 3), glm::vec3(1, 5, 1), 600, true);
-    model1 = Engine::Model("res/cube.obj", glm::vec3(3, -20, 3), glm::vec3(1, 5, 1), glm::vec3(0));
     model2 = Engine::Model("res/cube.obj", glm::vec3(3, -20, 3), glm::vec3(1, 5, 1), glm::vec3(0));
     model3 = Engine::Model("res/cube.obj", glm::vec3(0, -20, 0), glm::vec3(5, 0.1, 5), glm::vec3(0));
     model4 = Engine::Model("res/cube.obj", glm::vec3(0), glm::vec3(1, 2.5, 1), glm::vec3(0));
@@ -48,10 +47,9 @@ void Manager::Update(){
 
     body.Update();
 
-    model.SetPosition(body.pos);
+    //model.SetPosition(body.pos);
     model4.SetPosition(body.pos);
 
-    model1.Draw();
     model2.Draw();
     model3.Draw();
     model4.Draw();

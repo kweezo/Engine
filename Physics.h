@@ -4,6 +4,7 @@
 #include <vector>
 #include <iostream>
 #include <limits>
+#include <stdlib.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -18,7 +19,12 @@ namespace Engine{
 #define DEFAULT_ELASTICITY 0.3f
 #define DEFAULT_FRICTION 0.2f
 
-#define SHAPE_POINTS 8
+#define COLLIDER_VERTEX_COUNT 8
+
+struct OverlapInfo{
+    bool isOverlapping;
+    float overlap;
+};
 
 class Body{
 public:
@@ -38,19 +44,17 @@ public:
     bool isGrounded;
 
     float density;
-    glm::vec3 points[SHAPE_POINTS];
-    glm::vec3 vertices[SHAPE_POINTS];
+    glm::vec3 points[COLLIDER_VERTEX_COUNT];
+    glm::vec3 vertices[COLLIDER_VERTEX_COUNT];
 private:
 
     void UpdateVertices();
 
     glm::mat4 model;
 
-    std::vector<glm::vec3> xSideCollisionPoints;
-    std::vector<glm::vec3> ySideCollisionPoints;
-    std::vector<glm::vec3> zSideCollisionPoints;
 
-    static bool IsRayIntersecting(Body* other, glm::vec3 p1, glm::vec3 p2, float numIcrements);
+    static OverlapInfo CheckOverlap(Body* b1, Body* b2, glm::vec3 axis);
+    static float CalculateOverlap(float aMinProj, float aMaxProj, float bMinProj, float bMaxProj);
 
     void ApplyGravity();
     void RecalculateTerminalVelocity();
