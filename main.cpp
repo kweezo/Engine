@@ -45,8 +45,10 @@ void Manager::Init(){
 void Manager::Update(){
     Engine::Window::Clear();
 
-    body.Update();
 
+    body.CheckCollision(&body2);
+    body.CheckCollision(&body3);
+    body.Update();
     //model.SetPosition(body.pos);
     model4.SetPosition(body.pos);
 
@@ -54,8 +56,6 @@ void Manager::Update(){
     model3.Draw();
     model4.Draw();
 
-    body.CheckCollision(&body2);
-    body.CheckCollision(&body3);
 
     if(glfwGetKey(Engine::Window::GetGLFWWindow(), GLFW_KEY_UP)){
         body.vel = glm::vec3(0, 0, 1);

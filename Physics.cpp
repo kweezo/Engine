@@ -73,7 +73,7 @@ void Body::Update(){
     isGrounded = false;
 }
 float Body::CalculateOverlap(float aMinProj, float aMaxProj, float bMinProj, float bMaxProj){
-    return (aMinProj > bMinProj) ? aMinProj : bMinProj - (aMaxProj > bMaxProj) ? bMaxProj : aMaxProj; 
+    return std::min(bMaxProj, aMaxProj) - std::max(aMinProj, bMinProj); 
 }
 
 void Body::CheckCollision(Body* other){
@@ -135,7 +135,9 @@ void Body::CheckCollision(Body* other){
         }
     }
 
-    
+    axis.y = axis.y * -1;
+    pos -= axis * overlap;
+
     vel = glm::vec3(0);
     
 }
