@@ -84,6 +84,7 @@ void Body::CheckCollision(Body* other){
 
     glm::vec3 axis;
 
+    //calculate the fucking normal axis:
 
     glm::vec3 mtvAxis;
     float overlap = std::numeric_limits<float>::infinity();
@@ -148,7 +149,12 @@ void Body::CheckCollision(Body* other){
 
     }
 
-//    axis.y = axis.y * -1;
+    axis.x = static_cast<float>(static_cast<int>(axis.x * 10)) / 10;
+    axis.y = static_cast<float>(static_cast<int>(axis.y * 10)) / 10;
+    axis.z = static_cast<float>(static_cast<int>(axis.z * 10)) / 10;
+
+    glm::vec3 normalAxis = 
+
     pos += axis * overlap;
 
     vel.y = 0;

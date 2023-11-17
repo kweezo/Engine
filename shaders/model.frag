@@ -29,6 +29,6 @@ void main(){
     color = texture(baseTex, oTexCoords) * (texture(normalTex, oNormalCoords.xy) * 0.5 + 0.5) * vec4(colorModifier, 1.0); 
     color *= vec4(globalLightColor * diff, 1.0f) * globalLightBrightness;
 
-//    color = vec4(oTexCoords, 0.0, 1.0);
+    color = vec4(oTexCoords, 0.0, 1.0);
 
 }
