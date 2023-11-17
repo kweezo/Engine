@@ -9,7 +9,7 @@ Body::Body(glm::vec3 pos, glm::vec3 size, float mass, bool isStatic){
     this->isStatic = isStatic;
     this->vel = glm::vec3(0);
 
-    float density = (size.x * size.y * size.z) / mass;
+    float density = mass / (size.x * size.y * size.z);
 
     isGrounded = false;
 
@@ -101,6 +101,10 @@ void Body::CheckCollision(Body* other){
         if(!overlapInfo.isOverlapping){
             return;
         }
+        if(overlapInfo.overlap < overlap){
+            overlap = overlapInfo.overlap;
+            mtvAxis = axis;
+        }
 
         curr = other->vertices[i];
         edges[0] = other->vertices[(i + 1) % COLLIDER_VERTEX_COUNT]- curr;
@@ -112,6 +116,10 @@ void Body::CheckCollision(Body* other){
         if(!overlapInfo.isOverlapping){
             return;
         }
+        if(overlapInfo.overlap < overlap){
+            overlap = overlapInfo.overlap;
+            mtvAxis = axis;
+        }
 
         axis = glm::normalize(glm::cross(vertices[(i + 1) % COLLIDER_VERTEX_COUNT] - curr,
         other->vertices[(i + 1) % COLLIDER_VERTEX_COUNT] - other->vertices[i]));
@@ -119,6 +127,10 @@ void Body::CheckCollision(Body* other){
         overlapInfo = CheckOverlap(this, other, axis);
         if(!overlapInfo.isOverlapping){
             return;
+        }
+        if(overlapInfo.overlap < overlap){
+            overlap = overlapInfo.overlap;
+            mtvAxis = axis;
         }
 
         axis = glm::normalize(glm::cross(vertices[(i + 2) % COLLIDER_VERTEX_COUNT] - curr,
@@ -128,17 +140,18 @@ void Body::CheckCollision(Body* other){
         if(!overlapInfo.isOverlapping){
             return;
         }
-
+        
         if(overlapInfo.overlap < overlap){
             overlap = overlapInfo.overlap;
             mtvAxis = axis;
         }
+
     }
 
-    axis.y = axis.y * -1;
-    pos -= axis * overlap;
+//    axis.y = axis.y * -1;
+    pos += axis * overlap;
 
-    vel = glm::vec3(0);
+    vel.y = 0;
     
 }
 

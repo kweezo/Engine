@@ -21,12 +21,12 @@ public:
 };
 
 void Manager::Init(){
-    Engine::Window::CreateWindow(1280, 720, "LE WINDOW", false, true);
+    Engine::Window::CreateWindow(1920, 1080, "LE WINDOW", false, true);
 
     Engine::Camera::Init();
 
 
-//     model = Engine::Model("res/rat.fbx", glm::vec3(0), glm::vec3(100), glm::vec3(0.0f, 0.0f, 0.0f));
+     model = Engine::Model("res/rat.fbx", glm::vec3(0), glm::vec3(100), glm::vec3(0.0f, 0.0f, 0.0f));
 
     Engine::Window::SetClearColor({0.5, 0.5, 0.5, 1.0});
 
@@ -49,12 +49,13 @@ void Manager::Update(){
     body.CheckCollision(&body2);
     body.CheckCollision(&body3);
     body.Update();
-    //model.SetPosition(body.pos);
+
     model4.SetPosition(body.pos);
+    model.SetPosition(body.pos);
 
     model2.Draw();
     model3.Draw();
-    model4.Draw();
+    model.Draw();
 
 
     if(glfwGetKey(Engine::Window::GetGLFWWindow(), GLFW_KEY_UP)){
