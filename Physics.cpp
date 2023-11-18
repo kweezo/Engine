@@ -149,13 +149,12 @@ void Body::CheckCollision(Body* other){
 
     }
 
-    axis.x = static_cast<float>(static_cast<int>(axis.x * 10)) / 10;
-    axis.y = static_cast<float>(static_cast<int>(axis.y * 10)) / 10;
-    axis.z = static_cast<float>(static_cast<int>(axis.z * 10)) / 10;
+    mtvAxis.x = static_cast<float>(static_cast<int>(mtvAxis.x * 10)) / 10;
+    mtvAxis.y = static_cast<float>(static_cast<int>(mtvAxis.y * 10)) / 10;
+    mtvAxis.z = static_cast<float>(static_cast<int>(mtvAxis.z * 10)) / 10;
 
-    glm::vec3 normalAxis = 
 
-    pos += axis * overlap;
+    pos -= mtvAxis * overlap;
 
     vel.y = 0;
     
@@ -210,3 +209,4 @@ void Body::ApplyImpulse(glm::vec3 impulse){
     vel += impulse;
 }
 }
+//wana kms https://gamedev.stackexchange.com/questions/44500/how-many-and-which-axes-to-use-for-3d-obb-collision-with-sat

@@ -26,7 +26,7 @@ void Manager::Init(){
     Engine::Camera::Init();
 
 
-     model = Engine::Model("res/rat.fbx", glm::vec3(0), glm::vec3(100), glm::vec3(0.0f, 0.0f, 0.0f));
+//     model = Engine::Model("res/rat.fbx", glm::vec3(0), glm::vec3(100), glm::vec3(0.0f, 0.0f, 0.0f));
 
     Engine::Window::SetClearColor({0.5, 0.5, 0.5, 1.0});
 
@@ -55,7 +55,8 @@ void Manager::Update(){
 
     model2.Draw();
     model3.Draw();
-    model.Draw();
+//    model.Draw();
+    model4.Draw();
 
 
     if(glfwGetKey(Engine::Window::GetGLFWWindow(), GLFW_KEY_UP)){
