@@ -13,14 +13,15 @@ Body::Body(glm::vec3 pos, glm::vec3 size, float mass, bool isStatic){
 
     isGrounded = false;
 
-    points[0] = glm::vec3(-0.5f, -0.5f, -0.5f);
-    points[1] = glm::vec3(-0.5f, -0.5f, 0.5f);
-    points[2] = glm::vec3(-0.5f, 0.5f, -0.5f);
-    points[3] = glm::vec3(-0.5f, 0.5f, 0.5f);
-    points[4] = glm::vec3(0.5f, -0.5f, -0.5f);
-    points[5] = glm::vec3(0.5f, -0.5f, 0.5f);
-    points[6] = glm::vec3(0.5f, 0.5f, -0.5f);
-    points[7] = glm::vec3(0.5f, 0.5f, 0.5f);
+    points[0] = glm::vec3(-0.5, -0.5, -0.5);
+    points[1] = glm::vec3( 0.5, -0.5, -0.5);
+    points[2] = glm::vec3( 0.5,  0.5, -0.5);
+    points[3] = glm::vec3(-0.5,  0.5, -0.5);
+    
+    points[4] = glm::vec3(-0.5, -0.5,  0.5);
+    points[5] = glm::vec3( 0.5, -0.5,  0.5);
+    points[6] = glm::vec3( 0.5,  0.5,  0.5);
+    points[7] = glm::vec3(-0.5,  0.5,  0.5);
 
     UpdateVertices();
 
@@ -76,6 +77,22 @@ float Body::CalculateOverlap(float aMinProj, float aMaxProj, float bMinProj, flo
     return std::min(bMaxProj, aMaxProj) - std::max(aMinProj, bMinProj); 
 }
 
+std::array<glm::vec3, 3> Body::CalculateAxes(){
+    std::array<glm::vec3, 3> axes;
+
+    glm::vec3 edge1 = glm::normalize(vertices[1] - vertices[0]);     
+    glm::vec3 edge2 = glm::normalize(vertices[4] - vertices[0]);     
+    glm::vec3 edge3 = glm::normalize(vertices[3] - vertices[0]);     
+
+
+    axes[0] = edge1;
+    axes[1] = edge2;
+    axes[2] = edge3;
+
+
+    return axes;
+}
+
 void Body::CheckCollision(Body* other){
 
     if(isStatic && other->isStatic){
@@ -87,71 +104,111 @@ void Body::CheckCollision(Body* other){
     //calculate the fucking normal axis:
 
     glm::vec3 mtvAxis;
+
+    std::array<glm::vec3, 3> axes = CalculateAxes();
+    std::array<glm::vec3, 3> otherAxes = other->CalculateAxes();
+
     float overlap = std::numeric_limits<float>::infinity();
 
-    for(uint32_t i = 0; i < COLLIDER_VERTEX_COUNT; i++){
-        glm::vec3 curr = vertices[i];
-        glm::vec3 edges[2];
+    for(uint32_t i = 0; i < 3; i++){
 
-        edges[0] = vertices[(i + 1) % COLLIDER_VERTEX_COUNT]- curr;
-        edges[1] = vertices[(i + 2) % COLLIDER_VERTEX_COUNT]- curr;
-
-        axis = glm::normalize(glm::cross(edges[1], edges[0]));
-
-        OverlapInfo overlapInfo = CheckOverlap(this, other, axis);
+        OverlapInfo overlapInfo = CheckOverlap(this, other, axes[i]);
         if(!overlapInfo.isOverlapping){
             return;
         }
         if(overlapInfo.overlap < overlap){
             overlap = overlapInfo.overlap;
-            mtvAxis = axis;
+            mtvAxis = axes[i];
         }
 
-        curr = other->vertices[i];
-        edges[0] = other->vertices[(i + 1) % COLLIDER_VERTEX_COUNT]- curr;
-        edges[1] = other->vertices[(i + 2) % COLLIDER_VERTEX_COUNT]- curr;
-
-        axis = glm::normalize(glm::cross(edges[1], edges[0]));
-
-        overlapInfo = CheckOverlap(this, other, axis);
+        overlapInfo = CheckOverlap(this, other, otherAxes[i]);
         if(!overlapInfo.isOverlapping){
             return;
         }
         if(overlapInfo.overlap < overlap){
             overlap = overlapInfo.overlap;
-            mtvAxis = axis;
+            mtvAxis = axes[i];
         }
 
-        axis = glm::normalize(glm::cross(vertices[(i + 1) % COLLIDER_VERTEX_COUNT] - curr,
-        other->vertices[(i + 1) % COLLIDER_VERTEX_COUNT] - other->vertices[i]));
 
-        overlapInfo = CheckOverlap(this, other, axis);
-        if(!overlapInfo.isOverlapping){
-            return;
-        }
-        if(overlapInfo.overlap < overlap){
-            overlap = overlapInfo.overlap;
-            mtvAxis = axis;
-        }
+        for(uint32_t j = 0; j < 3; j++){
+            
+            if(axes[i] == otherAxes[j]){
+                overlapInfo = CheckOverlap(this, other, axes[i]);
+                if(!overlapInfo.isOverlapping){
+                    return;
+                }
+                if(overlapInfo.overlap < overlap){
+                    overlap = overlapInfo.overlap;
+                    mtvAxis = axes[i];
+                }
+                continue;
+            }
 
-        axis = glm::normalize(glm::cross(vertices[(i + 2) % COLLIDER_VERTEX_COUNT] - curr,
-        other->vertices[(i + 2) % COLLIDER_VERTEX_COUNT] - other->vertices[i]));
-        
-        overlapInfo = CheckOverlap(this, other, axis);
-        if(!overlapInfo.isOverlapping){
-            return;
+            overlapInfo = CheckOverlap(this, other, glm::normalize(glm::cross(axes[i], otherAxes[j])));
+            if(!overlapInfo.isOverlapping){
+                return;
+            }
+            if(overlapInfo.overlap < overlap){
+                overlap = overlapInfo.overlap;
+                mtvAxis = glm::normalize(glm::cross(axes[i], otherAxes[j]));
+            }
         }
-        
-        if(overlapInfo.overlap < overlap){
-            overlap = overlapInfo.overlap;
-            mtvAxis = axis;
-        }
-
     }
+ for(uint32_t i = 0; i < 3; i++){
 
-    mtvAxis.x = static_cast<float>(static_cast<int>(mtvAxis.x * 10)) / 10;
+        OverlapInfo overlapInfo = CheckOverlap(this, other, -axes[i]);
+        if(!overlapInfo.isOverlapping){
+            return;
+        }
+        if(overlapInfo.overlap < overlap){
+            overlap = overlapInfo.overlap;
+            mtvAxis = -axes[i];
+        }
+
+        overlapInfo = CheckOverlap(this, other, -otherAxes[i]);
+        if(!overlapInfo.isOverlapping){
+            return;
+        }
+        if(overlapInfo.overlap < overlap){
+            overlap = overlapInfo.overlap;
+            mtvAxis = -axes[i];
+        }
+
+
+        for(uint32_t j = 0; j < 3; j++){
+            
+            if(axes[i] == otherAxes[j]){
+                overlapInfo = CheckOverlap(this, other, -axes[i]);
+                if(!overlapInfo.isOverlapping){
+                    return;
+                }
+                if(overlapInfo.overlap < overlap){
+                    overlap = overlapInfo.overlap;
+                    mtvAxis = -axes[i];
+                }
+                continue;
+            }
+
+            overlapInfo = CheckOverlap(this, other, glm::normalize(glm::cross(-axes[i], -otherAxes[j])));
+            if(!overlapInfo.isOverlapping){
+                return;
+            }
+            if(overlapInfo.overlap < overlap){
+                overlap = overlapInfo.overlap;
+                mtvAxis = glm::normalize(glm::cross(-axes[i], -otherAxes[j]));
+            }
+        }
+    }
+//    std::cout << mtvAxis.x << " " << mtvAxis.y << " " << mtvAxis.z << " 1" << std::endl;
+
+    mtvAxis.x = static_cast<float>(static_cast<int>(mtvAxis.x * 10)) / 10; //fix some float inprecisions
     mtvAxis.y = static_cast<float>(static_cast<int>(mtvAxis.y * 10)) / 10;
     mtvAxis.z = static_cast<float>(static_cast<int>(mtvAxis.z * 10)) / 10;
+
+//    mtvAxis = glm::normalize(mtvAxis);
+
+
 
 
     pos -= mtvAxis * overlap;
@@ -201,6 +258,8 @@ OverlapInfo Body::CheckOverlap(Body* b1, Body* b2, glm::vec3 axis){
 
     overlapInfo.isOverlapping = true;
     overlapInfo.overlap = CalculateOverlap(aMinProj, aMaxProj, bMinProj, bMaxProj);
+//    std:: << std::max(aMinProj, bMinProj) - std::min(bMaxProj, aMaxProj) << std::endl;
+ //   std:: << aMinProj << " " << aMaxProj << " " << bMinProj << " " << bMaxProj << std::endl;
     return overlapInfo;
 }
 

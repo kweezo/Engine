@@ -5,6 +5,7 @@
 #include <iostream>
 #include <limits>
 #include <stdlib.h>
+#include <array>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -33,6 +34,8 @@ public:
     void CheckCollision(Body* other);
 
     void ApplyImpulse(glm::vec3 impulse);
+
+    std::array<glm::vec3, 3> CalculateAxes();
 
     void Update();
     glm::vec3 pos;
