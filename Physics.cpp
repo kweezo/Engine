@@ -155,51 +155,6 @@ void Body::CheckCollision(Body* other){
             }
         }
     }
- for(uint32_t i = 0; i < 3; i++){
-
-        OverlapInfo overlapInfo = CheckOverlap(this, other, -axes[i]);
-        if(!overlapInfo.isOverlapping){
-            return;
-        }
-        if(overlapInfo.overlap < overlap){
-            overlap = overlapInfo.overlap;
-            mtvAxis = -axes[i];
-        }
-
-        overlapInfo = CheckOverlap(this, other, -otherAxes[i]);
-        if(!overlapInfo.isOverlapping){
-            return;
-        }
-        if(overlapInfo.overlap < overlap){
-            overlap = overlapInfo.overlap;
-            mtvAxis = -axes[i];
-        }
-
-
-        for(uint32_t j = 0; j < 3; j++){
-            
-            if(axes[i] == otherAxes[j]){
-                overlapInfo = CheckOverlap(this, other, -axes[i]);
-                if(!overlapInfo.isOverlapping){
-                    return;
-                }
-                if(overlapInfo.overlap < overlap){
-                    overlap = overlapInfo.overlap;
-                    mtvAxis = -axes[i];
-                }
-                continue;
-            }
-
-            overlapInfo = CheckOverlap(this, other, glm::normalize(glm::cross(-axes[i], -otherAxes[j])));
-            if(!overlapInfo.isOverlapping){
-                return;
-            }
-            if(overlapInfo.overlap < overlap){
-                overlap = overlapInfo.overlap;
-                mtvAxis = glm::normalize(glm::cross(-axes[i], -otherAxes[j]));
-            }
-        }
-    }
 //    std::cout << mtvAxis.x << " " << mtvAxis.y << " " << mtvAxis.z << " 1" << std::endl;
 
     mtvAxis.x = static_cast<float>(static_cast<int>(mtvAxis.x * 10)) / 10; //fix some float inprecisions
@@ -208,10 +163,19 @@ void Body::CheckCollision(Body* other){
 
 //    mtvAxis = glm::normalize(mtvAxis);
 
+    glm::vec3 dirVector = glm::vec3(1);
 
+    if(other->pos.x > pos.x){
+        dirVector.x = -1;
+    }
+    if(other->pos.y < pos.y){
+        dirVector.y = -1;
+    }
+    if(other->pos.z > pos.z){
+        dirVector.z = -1;
+    }
 
-
-    pos -= mtvAxis * overlap;
+    pos -= mtvAxis * overlap * -dirVector;
 
     vel.y = 0;
     

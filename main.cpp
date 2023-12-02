@@ -66,10 +66,10 @@ void Manager::Update(){
         body.vel = glm::vec3(0, 0, -1);
     }
     if(glfwGetKey(Engine::Window::GetGLFWWindow(), GLFW_KEY_LEFT)){
-        body.vel = glm::vec3(-1, 0, 0);
+        body.vel = glm::vec3(1, 0, 0);
     }
     if(glfwGetKey(Engine::Window::GetGLFWWindow(), GLFW_KEY_RIGHT)){
-        body.vel = glm::vec3(1, 0, 0);
+        body.vel = glm::vec3(-1, 0, 0);
     }
 
 //    model.SetRotation(glm::vec3(0, -90, glfwGetTime()*50));
