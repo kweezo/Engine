@@ -21,7 +21,7 @@ public:
 };
 
 void Manager::Init(){
-    Engine::Window::CreateWindow(1920, 1080, "LE WINDOW", false, true);
+    Engine::Window::CreateWindow(3840, 2160, "LE WINDOW", false, true);
 
     Engine::Camera::Init();
 
@@ -50,8 +50,9 @@ void Manager::Update(){
     body.CheckCollision(&body3);
     body.Update();
 
-    model4.SetPosition(body.pos);
-    model.SetPosition(body.pos);
+    model4.SetPosition(body.GetPos());
+    model.SetPosition(body.GetPos());
+
 
     model2.Draw();
     model3.Draw();
@@ -60,19 +61,22 @@ void Manager::Update(){
 
 
     if(glfwGetKey(Engine::Window::GetGLFWWindow(), GLFW_KEY_UP)){
-        body.vel = glm::vec3(0, 0, 1);
+        body.SetVel(glm::vec3(0, 0, 1));
     } 
     if(glfwGetKey(Engine::Window::GetGLFWWindow(), GLFW_KEY_DOWN)){
-        body.vel = glm::vec3(0, 0, -1);
+        body.SetVel(glm::vec3(0, 0, -1));
     }
     if(glfwGetKey(Engine::Window::GetGLFWWindow(), GLFW_KEY_LEFT)){
-        body.vel = glm::vec3(1, 0, 0);
+        body.SetVel(glm::vec3(1, 0, 0));
     }
     if(glfwGetKey(Engine::Window::GetGLFWWindow(), GLFW_KEY_RIGHT)){
-        body.vel = glm::vec3(-1, 0, 0);
+        body.SetVel(glm::vec3(-1, 0, 0));
+    }
+    if(glfwGetKey(Engine::Window::GetGLFWWindow(), GLFW_KEY_0)){
+    body.SetOrientation(glm::vec3(0.0f, glfwGetTime()/2, 0.0f));
     }
 
-//    model.SetRotation(glm::vec3(0, -90, glfwGetTime()*50));
+    model4.SetRotation(glm::vec3(0, glm::degrees(body.GetOrientation().y), 0));
 
 
     Engine::Camera::BasicController();

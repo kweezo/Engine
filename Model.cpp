@@ -183,6 +183,12 @@ void Model::CreateBuffers()
         glEnableVertexAttribArray(2);
         glEnableVertexAttribArray(3);
 
+        mesh->indiceCount = mesh->indices.size();
+
+        mesh->vertices.clear();
+        mesh->normals.clear();
+        mesh->texCoords.clear();
+        mesh->indices.clear();
     }
 }
 
@@ -207,7 +213,7 @@ void Model::Draw()
 
         Light::ApplyGlobalLight(shader);
 
-        glDrawElements(GL_TRIANGLES, mesh->indices.size(), GL_UNSIGNED_INT, nullptr);
+        glDrawElements(GL_TRIANGLES, mesh->indiceCount, GL_UNSIGNED_INT, nullptr);
     }
 }
 
@@ -230,9 +236,10 @@ void Model::UpdateModelMatrix(){
     model = glm::mat4(1.0f);
 
     model = glm::translate(model, pos);
-    model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(1, 0, 0));
-    model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(0, 1, 0));
+    model = glm::rotate(model, glm::radians(rotation.x), glm::vec3(1, 0, 0));
+    model = glm::rotate(model, glm::radians(rotation.y), glm::vec3(0, 1, 0));
     model = glm::rotate(model, glm::radians(rotation.z), glm::vec3(0, 0, 1));
     model = glm::scale(model, scale);
 }
+
 }

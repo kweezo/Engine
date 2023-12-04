@@ -2,12 +2,17 @@
 
 namespace Engine{
 
+
+std::vector<Body*> Body::bodies = {};
+
 Body::Body(glm::vec3 pos, glm::vec3 size, float mass, bool isStatic){
     this->pos = pos;
     this->mass = mass;
     this->size = size;
     this->isStatic = isStatic;
     this->vel = glm::vec3(0);
+
+    orientation = glm::vec3(0);
 
     float density = mass / (size.x * size.y * size.z);
 
@@ -24,16 +29,13 @@ Body::Body(glm::vec3 pos, glm::vec3 size, float mass, bool isStatic){
     points[7] = glm::vec3(-0.5,  0.5,  0.5);
 
     UpdateVertices();
+    CalculateAxes();
 
 
     model = glm::mat4(1.0f);
 
-    RecalculateTerminalVelocity();
 }
 
-void Body::RecalculateTerminalVelocity(){
-    terminalV = -sqrt((2 * mass * GRAVITY*-1) / (DRAG_COEFFICIENT * AIR_DENSITY * size.x * size.y)); 
-}
 
 void Body::ApplyGravity(){
     if(isGrounded){
@@ -42,8 +44,8 @@ void Body::ApplyGravity(){
     vel.y += GRAVITY * deltaTime;
 
 
-    if(vel.y < terminalV){
-        vel.y = terminalV;
+    if(vel.y < GRAVITY){
+        vel.y = GRAVITY;
     }
 
 }
@@ -53,10 +55,16 @@ void Body::UpdateVertices(){
     model = glm::translate(model, pos);
     model = glm::scale(model, size * 2.0f);
 
+    model = glm::rotate(model, orientation.x, glm::vec3(1.0f, 0.0f, 0.0f));
+    model = glm::rotate(model, orientation.y, glm::vec3(0.0f, 1.0f, 0.0f));
+    model = glm::rotate(model, orientation.z, glm::vec3(0.0f, 0.0f, 1.0f));
+
     for(uint32_t i = 0; i < COLLIDER_VERTEX_COUNT; i++){
         glm::vec4 v = model*glm::vec4(points[i], 1.0f);
         vertices[i] = glm::vec3(v.x, v.y, v.z);
     }
+
+    CalculateAxes();
 }
 
 void Body::Update(){
@@ -77,9 +85,7 @@ float Body::CalculateOverlap(float aMinProj, float aMaxProj, float bMinProj, flo
     return std::min(bMaxProj, aMaxProj) - std::max(aMinProj, bMinProj); 
 }
 
-std::array<glm::vec3, 3> Body::CalculateAxes(){
-    std::array<glm::vec3, 3> axes;
-
+void Body::CalculateAxes(){
     glm::vec3 edge1 = glm::normalize(vertices[1] - vertices[0]);     
     glm::vec3 edge2 = glm::normalize(vertices[4] - vertices[0]);     
     glm::vec3 edge3 = glm::normalize(vertices[3] - vertices[0]);     
@@ -88,8 +94,9 @@ std::array<glm::vec3, 3> Body::CalculateAxes(){
     axes[0] = edge1;
     axes[1] = edge2;
     axes[2] = edge3;
+}
 
-
+std::array<glm::vec3, 3> Body::GetAxes(){
     return axes;
 }
 
@@ -105,8 +112,8 @@ void Body::CheckCollision(Body* other){
 
     glm::vec3 mtvAxis;
 
-    std::array<glm::vec3, 3> axes = CalculateAxes();
-    std::array<glm::vec3, 3> otherAxes = other->CalculateAxes();
+    std::array<glm::vec3, 3> axes = GetAxes();
+    std::array<glm::vec3, 3> otherAxes = other->GetAxes();
 
     float overlap = std::numeric_limits<float>::infinity();
 
@@ -155,13 +162,12 @@ void Body::CheckCollision(Body* other){
             }
         }
     }
-//    std::cout << mtvAxis.x << " " << mtvAxis.y << " " << mtvAxis.z << " 1" << std::endl;
 
-    mtvAxis.x = static_cast<float>(static_cast<int>(mtvAxis.x * 10)) / 10; //fix some float inprecisions
-    mtvAxis.y = static_cast<float>(static_cast<int>(mtvAxis.y * 10)) / 10;
-    mtvAxis.z = static_cast<float>(static_cast<int>(mtvAxis.z * 10)) / 10;
 
-//    mtvAxis = glm::normalize(mtvAxis);
+    mtvAxis.x *= PI >= orientation.y ? 1 : -1;
+    mtvAxis.y *= PI >= orientation.y ? 1 : -1;
+    mtvAxis.z *= PI >= orientation.y ? 1 : -1;
+
 
     glm::vec3 dirVector = glm::vec3(1);
 
@@ -175,9 +181,24 @@ void Body::CheckCollision(Body* other){
         dirVector.z = -1;
     }
 
-    pos -= mtvAxis * overlap * -dirVector;
 
-    vel.y = 0;
+    glm::vec3 offset = mtvAxis * overlap * -dirVector;
+
+    pos -= offset;
+
+    if(std::signbit(vel.x) == std::signbit(mtvAxis.x) && mtvAxis.x != 0){
+        vel.x = 0;
+    }
+    if(std::signbit(vel.y) == std::signbit(mtvAxis.y) && mtvAxis.y != 0){
+        vel.y = 0;
+    }
+    if(std::signbit(vel.z) == std::signbit(mtvAxis.z) && mtvAxis.z != 0){
+        vel.z = 0;
+    }
+
+    if(mtvAxis.y == -1){
+        isGrounded = true;
+    }
     
 }
 
@@ -222,14 +243,87 @@ OverlapInfo Body::CheckOverlap(Body* b1, Body* b2, glm::vec3 axis){
 
     overlapInfo.isOverlapping = true;
     overlapInfo.overlap = CalculateOverlap(aMinProj, aMaxProj, bMinProj, bMaxProj);
-//    std:: << std::max(aMinProj, bMinProj) - std::min(bMaxProj, aMaxProj) << std::endl;
- //   std:: << aMinProj << " " << aMaxProj << " " << bMinProj << " " << bMaxProj << std::endl;
     return overlapInfo;
 }
 
+void Body::DrawCollider(){
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+
+
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+}
 
 void Body::ApplyImpulse(glm::vec3 impulse){
     vel += impulse;
 }
+
+void Body::SetVel(glm::vec3 newVel){
+    vel = newVel;
 }
+
+
+void Body::RemoveFromSimulation(){
+    std::vector<Body*>::iterator selfIndex = std::find(bodies.begin(), bodies.end(), this);
+    if(selfIndex == bodies.end()){
+        std::cerr << "ERROR: Body not removed from simulation as it is not in it currently" << std::endl;
+    }
+    bodies.erase(selfIndex);
+}
+
+void Body::ReaddToSimulation(){
+    bodies.push_back(this);
+}
+
+
+bool Body::IsGrounded(){
+    return isGrounded;
+}
+
+bool Body::IsStatic(){
+    return isStatic;
+}
+
+
+glm::vec3 Body::GetPos(){
+    return pos;
+}
+
+void Body::SetPos(glm::vec3 newPos){
+    pos = newPos;
+    UpdateVertices();
+}
+
+
+glm::vec3 Body::GetSize(){
+    return size;
+}
+
+void Body::SetSize(glm::vec3 newSize){
+    size = newSize;
+    UpdateVertices();
+}
+
+
+float Body::GetMass(){
+    return mass;
+}
+
+void Body::SetMass(float newMass){
+    mass = newMass;
+}
+
+
+glm::vec3 Body::GetOrientation(){
+    return orientation;
+}
+
+void Body::SetOrientation(glm::vec3 newOrientation){
+    orientation = glm::vec3(fmod(newOrientation.x, 2 * PI), fmod(newOrientation.y, 2 * PI), fmod(newOrientation.z, 2 * PI));
+    UpdateVertices();
+    CalculateAxes();
+}
+
+}
+
 //wana kms https://gamedev.stackexchange.com/questions/44500/how-many-and-which-axes-to-use-for-3d-obb-collision-with-sat

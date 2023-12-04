@@ -12,6 +12,7 @@
 #include <unordered_map>
 #include <map>
 #include <functional>
+#include <memory>
 
 #include <assimp/Importer.hpp>
 #include <assimp/scene.h>
@@ -30,18 +31,14 @@ struct Mesh{
     GLuint VAO, VBO, uvVBO, normalVBO,  EBO;
 
     uint32_t baseColorSpriteIndex, normalSpriteIndex;
-
+    uint32_t indiceCount;
 
     glm::vec3 baseColorModifier;
-
 
     std::vector<float> vertices;
     std::vector<float> normals;
     std::vector<float> texCoords;
     std::vector<GLuint> indices;
-
-
-
 };
 
 class Model{
@@ -63,6 +60,9 @@ private:
 
     void CreateBuffers();
 
+    std::shared_ptr<char> useCount;
+
+    void CopyFrom(const Model& other);
 
     std::vector<Mesh*> meshes; 
 

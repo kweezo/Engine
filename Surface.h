@@ -20,6 +20,31 @@
 
 namespace Engine {
 class Surface {
+public:
+    Surface();
+    Surface(glm::vec3 pos, glm::vec3 scale, glm::vec3 rotation, Sprite sprite);
+
+    Surface(const Surface& other);
+    Surface& operator=(const Surface& other);
+
+    ~Surface();
+
+    //Surface(const Surface& other);
+
+    void CreateInstanceVBO();
+
+    void UpdateInstanceVBO(std::vector<glm::vec3>& newTransform/*each instance has scale pos and rotation*/);
+    void ClearInstanceVBO();
+
+    void SetPosition(glm::vec3 pos);
+    void SetScale(glm::vec3 scale);
+    void SetRotation(glm::vec3 rotation);
+
+    void ToggleBillboard();
+
+    void Draw();
+    void DrawInstanced();
+
 private:
     static void Initialize();
     void CreateVAO();
@@ -46,31 +71,6 @@ private:
     void UpdateModelMatrix();
 
     bool isBillboard;
-public:
-    Surface();
-    Surface(glm::vec3 pos, glm::vec3 scale, glm::vec3 rotation, Sprite sprite);
-
-    Surface(const Surface& other);
-    Surface& operator=(const Surface& other);
-
-    ~Surface();
-
-    //Surface(const Surface& other);
-
-    void CreateInstanceVBO();
-
-    void UpdateInstanceVBO(std::vector<glm::vec3>& newTransform/*each instance has scale pos and rotation*/);
-    void ClearInstanceVBO();
-
-    void SetPosition(glm::vec3 pos);
-    void SetScale(glm::vec3 scale);
-    void SetRotation(glm::vec3 rotation);
-
-    void ToggleBillboard();
-
-    void Draw();
-    void DrawInstanced();
-
 };
 }
 
