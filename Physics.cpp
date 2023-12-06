@@ -164,9 +164,13 @@ void Body::CheckCollision(Body* other){
     }
 
 
-    mtvAxis.x *= PI >= orientation.y ? 1 : -1;
+    glm::mat4 orientationMat = glm::rotate(glm::mat4(1.0f),  2*PI - orientation.y, glm::vec3(0, 1, 0));
+    glm::vec4 rotatedAxis = orientationMat * glm::vec4(mtvAxis, 1.0);
+    mtvAxis = glm::vec3(rotatedAxis.x, rotatedAxis.y, rotatedAxis.z);
+
+//    mtvAxis.x *= PI >= orientation.y ? 1 : -1;
     mtvAxis.y *= PI >= orientation.y ? 1 : -1;
-    mtvAxis.z *= PI >= orientation.y ? 1 : -1;
+  //  mtvAxis.z *= PI >= orientation.y ? 1 : -1;
 
 
     glm::vec3 dirVector = glm::vec3(1);
@@ -181,8 +185,10 @@ void Body::CheckCollision(Body* other){
         dirVector.z = -1;
     }
 
+    
 
     glm::vec3 offset = mtvAxis * overlap * -dirVector;
+    offset.z = std::round(offset.z);
 
     pos -= offset;
 

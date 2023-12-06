@@ -21,7 +21,7 @@ public:
 };
 
 void Manager::Init(){
-    Engine::Window::CreateWindow(3840, 2160, "LE WINDOW", false, true);
+    Engine::Window::CreateWindow(1280, 720, "LE WINDOW", false, true);
 
     Engine::Camera::Init();
 
@@ -34,10 +34,10 @@ void Manager::Init(){
     Engine::Light::SetGlobalLightBrightness(1.f);
 
     body = Engine::Body(glm::vec3(0), glm::vec3(1, 2.5, 1), 0.2, false);
-    body2 = Engine::Body(glm::vec3(0, -20, 0), glm::vec3(5, 0.1, 5), 600, true);
+    body2 = Engine::Body(glm::vec3(0, -20, 0), glm::vec3(10, 0.1, 10), 600, true);
     body3 = Engine::Body(glm::vec3(3, -20, 3), glm::vec3(1, 5, 1), 600, true);
     model2 = Engine::Model("res/cube.obj", glm::vec3(3, -20, 3), glm::vec3(1, 5, 1), glm::vec3(0));
-    model3 = Engine::Model("res/cube.obj", glm::vec3(0, -20, 0), glm::vec3(5, 0.1, 5), glm::vec3(0));
+    model3 = Engine::Model("res/cube.obj", glm::vec3(0, -20, 0), glm::vec3(10, 0.1, 10), glm::vec3(0));
     model4 = Engine::Model("res/cube.obj", glm::vec3(0), glm::vec3(1, 2.5, 1), glm::vec3(0));
 
 }
