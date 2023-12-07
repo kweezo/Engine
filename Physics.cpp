@@ -164,13 +164,23 @@ void Body::CheckCollision(Body* other){
     }
 
 
-    glm::mat4 orientationMat = glm::rotate(glm::mat4(1.0f),  2*PI - orientation.y, glm::vec3(0, 1, 0));
+    glm::mat4 orientationMat = glm::rotate(glm::mat4(1.0f), 
+    2*PI - orientation.y, glm::vec3(0, 1, 0));
+    if(orientation.y > PI*0.5 && orientation.y < PI*1.5){
+        orientationMat = glm::rotate(glm::mat4(1.0f), PI, glm::vec3(0, 1, 0));
+    }
+    
+//    if(mtvAxis.y < 0 && mtvAxis.z < 0){
+//        orientationMat = glm::mat4(1.0f);
+//    }
+    std::cout << orientation.y << std::endl;
+
     glm::vec4 rotatedAxis = orientationMat * glm::vec4(mtvAxis, 1.0);
     mtvAxis = glm::vec3(rotatedAxis.x, rotatedAxis.y, rotatedAxis.z);
 
-//    mtvAxis.x *= PI >= orientation.y ? 1 : -1;
+    mtvAxis.x *= PI >= orientation.x ? 1 : -1;
     mtvAxis.y *= PI >= orientation.y ? 1 : -1;
-  //  mtvAxis.z *= PI >= orientation.y ? 1 : -1;
+    mtvAxis.z *= PI >= orientation.z ? 1 : -1;
 
 
     glm::vec3 dirVector = glm::vec3(1);
@@ -186,11 +196,10 @@ void Body::CheckCollision(Body* other){
     }
 
     
-
     glm::vec3 offset = mtvAxis * overlap * -dirVector;
-    offset.z = std::round(offset.z);
 
-    pos -= offset;
+
+    pos -= offset * 1.01f;
 
     if(std::signbit(vel.x) == std::signbit(mtvAxis.x) && mtvAxis.x != 0){
         vel.x = 0;
